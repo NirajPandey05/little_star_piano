@@ -1,0 +1,80 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  padding: 32px 16px;
+  min-height: 100vh;
+}
+
+.title {
+  font-family: var(--font-main);
+  font-size: var(--font-size-xl);
+  font-weight: 800;
+  color: var(--text-main);
+  text-align: center;
+}
+
+.modeCards {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.modeCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 28px 24px;
+  border: none;
+  border-radius: var(--border-radius-xl);
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  min-height: 160px;
+}
+
+.followMe {
+  background: linear-gradient(135deg, #E8F4FF, #D4EFFF);
+  border: 3px solid #4DABF7;
+}
+
+.findNote {
+  background: linear-gradient(135deg, #F3EEFF, #E8DFFF);
+  border: 3px solid #9775FA;
+}
+
+.modeEmoji {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.modeName {
+  font-family: var(--font-main);
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.modeDesc {
+  font-family: var(--font-main);
+  font-size: var(--font-size-md);
+  color: var(--text-light);
+  text-align: center;
+  font-weight: 700;
+}
+
+.stickersBtn {
+  background: linear-gradient(135deg, #FFD93D, #FF9F43);
+  color: #fff;
+  border: none;
+  border-radius: var(--border-radius-lg);
+  padding: 16px 40px;
+  font-family: var(--font-main);
+  font-size: var(--font-size-md);
+  font-weight: 800;
+  box-shadow: 0 4px 14px rgba(255,159,67,0.4);
+  min-width: 240px;
+}

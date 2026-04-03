@@ -1,0 +1,35 @@
+.app {
+  min-height: 100vh;
+  background: var(--bg-primary);
+}
+
+.screenHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255,255,255,0.8);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.backBtn {
+  background: rgba(255,255,255,0.7);
+  color: var(--text-main);
+  border: 2px solid #e2e8f0;
+  border-radius: var(--border-radius-lg);
+  padding: 8px 18px;
+  font-family: var(--font-main);
+  font-size: var(--font-size-md);
+  font-weight: 800;
+}
+
+.songTitle {
+  font-family: var(--font-main);
+  font-size: var(--font-size-md);
+  font-weight: 800;
+  color: var(--text-main);
+}

@@ -1,0 +1,82 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 16px;
+  min-height: 100vh;
+  padding-bottom: 40px;
+}
+
+.challengeCard {
+  background: rgba(255,255,255,0.7);
+  border-radius: var(--border-radius-xl);
+  padding: 24px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  border: 2px solid rgba(255,255,255,0.9);
+}
+
+.challengeLabel {
+  font-family: var(--font-main);
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.noteCircle {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+
+.noteLetter {
+  font-family: var(--font-main);
+  font-size: 3rem;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.playAgainBtn {
+  background: var(--btn-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--border-radius-lg);
+  padding: 12px 28px;
+  font-family: var(--font-main);
+  font-size: var(--font-size-md);
+  font-weight: 800;
+  box-shadow: 0 4px 12px rgba(77,171,247,0.4);
+  transition: transform 0.15s ease;
+}
+
+.playAgainBtn:hover {
+  transform: scale(1.05);
+}
+
+.progressLabel {
+  font-family: var(--font-main);
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--text-light);
+}
+
+.micWarning {
+  background: #FFF3CD;
+  border: 2px solid #FFD93D;
+  border-radius: var(--border-radius-lg);
+  padding: 12px 20px;
+  font-family: var(--font-main);
+  font-size: var(--font-size-md);
+  color: #856404;
+  text-align: center;
+  max-width: 400px;
+}

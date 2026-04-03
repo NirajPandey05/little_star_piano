@@ -1,0 +1,30 @@
+.indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1.2rem;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-family: var(--font-main);
+  font-weight: 700;
+}
+
+.idle {
+  color: #999;
+  background: rgba(200,200,200,0.2);
+}
+
+.active {
+  color: #38A169;
+  background: rgba(56,161,105,0.1);
+}
+
+.denied {
+  color: #E53E3E;
+  background: rgba(229,62,62,0.08);
+  font-size: 0.9rem;
+}
+
+.deniedText {
+  font-size: 0.75rem;
+}
