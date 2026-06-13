@@ -49,6 +49,8 @@ export function usePitchDetection() {
 
       const audioContext = new (window.AudioContext || window.webkitAudioContext)()
       audioContextRef.current = audioContext
+      // Resume is required — browsers suspend AudioContext until a user gesture
+      await audioContext.resume()
 
       const source = audioContext.createMediaStreamSource(stream)
       const analyser = audioContext.createAnalyser()

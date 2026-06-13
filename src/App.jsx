@@ -119,6 +119,7 @@ export default function App() {
             <SongFollower
               song={selectedSong}
               onSongComplete={handleSongComplete}
+              onMicStatusChange={setMicAllowed}
             />
           </motion.div>
         )
@@ -133,7 +134,7 @@ export default function App() {
               <span className={styles.songTitle}>Find the Note 👂</span>
               <MicStatus micAllowed={micAllowed} />
             </div>
-            <FindTheNote onChallengeComplete={handleChallengeComplete} />
+            <FindTheNote onChallengeComplete={handleChallengeComplete} onMicStatusChange={setMicAllowed} />
           </motion.div>
         )
 
@@ -142,14 +143,14 @@ export default function App() {
           <motion.div key="songComplete" {...screenVariants}>
             <SongCompleteScreen
               stars={lastStars}
-              songName={selectedMode === 'find' ? 'Find the Note' : selectedSong?.name}
+              songName={selectedMode === 'findTheNote' ? 'Find the Note' : selectedSong?.name}
               newStickers={newlyUnlocked}
               onPlayAgain={() => {
-                if (selectedMode === 'find') navigateTo('findTheNote')
+                if (selectedMode === 'findTheNote') navigateTo('findTheNote')
                 else navigateTo('songFollower')
               }}
               onChooseAnother={() => {
-                if (selectedMode === 'find') navigateTo('modeSelector')
+                if (selectedMode === 'findTheNote') navigateTo('modeSelector')
                 else navigateTo('songSelector')
               }}
             />

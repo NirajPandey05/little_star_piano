@@ -20,6 +20,12 @@
   overflow: hidden;
 }
 
+.shakeInner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .noteLetter {
   font-family: var(--font-main);
   font-size: 3.5rem;

@@ -5,45 +5,25 @@ import PianoKeyboard from '../PianoKeyboard/PianoKeyboard.jsx'
 import GuideCharacter from '../GuideCharacter/GuideCharacter.jsx'
 import { usePitchDetection } from '../../hooks/usePitchDetection.js'
 import { getFroggyResponse } from '../../services/aiService.js'
+import { playNoteAudio, playCorrectSound } from '../../services/audioService.js'
 import { COLOR_MAP } from '../../data/songs.js'
 import styles from './FindTheNote.module.css'
-import * as Tone from 'tone'
 
 // Curriculum order: start with easy-to-find notes
 const CHALLENGE_SEQUENCE = ['C', 'G', 'E', 'D', 'A', 'F', 'B']
 
-const sampler = new Tone.Sampler({
-  urls: {
-    C4: 'C4.mp3', D4: 'D4.mp3', E4: 'E4.mp3', F4: 'F4.mp3',
-    G4: 'G4.mp3', A4: 'A4.mp3', B4: 'B4.mp3', C5: 'C5.mp3',
-  },
-  baseUrl: 'https://tonejs.github.io/audio/salamander/',
-}).toDestination()
-
-function playNote(note) {
-  Tone.start()
-  sampler.triggerAttackRelease(`${note}4`, '2n')
-}
-
-function playCorrectSound() {
-  Tone.start()
-  const synth = new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { release: 0.3 } }).toDestination()
-  synth.triggerAttackRelease('C5', '8n')
-  setTimeout(() => synth.triggerAttackRelease('E5', '8n'), 120)
-  setTimeout(() => synth.triggerAttackRelease('G5', '4n'), 240)
-  setTimeout(() => synth.dispose(), 1500)
-}
-
-export default function FindTheNote({ onChallengeComplete }) {
+export default function FindTheNote({ onChallengeComplete, onMicStatusChange }) {
   const [challengeIndex, setChallengeIndex] = useState(0)
   const [wrongAttempts, setWrongAttempts] = useState(0)
   const [showHint, setShowHint] = useState(false)
-  const [starsEarned, setStarsEarned] = useState(0)
-  const [totalChallenges] = useState(CHALLENGE_SEQUENCE.length)
   const [frogMessage, setFrogMessage] = useState('')
   const [frogEmotion, setFrogEmotion] = useState('happy')
   const [frogLoading, setFrogLoading] = useState(false)
   const [correctFlash, setCorrectFlash] = useState(false)
+
+  // Accumulate stars in a ref so handleCorrectNote always sees the running total,
+  // not a stale closure snapshot from React state.
+  const starsEarnedRef = useRef(0)
 
   const { simpleNote, micAllowed, startListening, stopListening } = usePitchDetection()
   const processingRef = useRef(false)
@@ -52,90 +32,87 @@ export default function FindTheNote({ onChallengeComplete }) {
 
   const currentNote = CHALLENGE_SEQUENCE[challengeIndex]
 
-  // Start the challenge with an AI greeting
   useEffect(() => {
     startListening()
-    askForNote(currentNote)
+    askForNote(CHALLENGE_SEQUENCE[0])
     return () => stopListening()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Propagate mic status to parent for the header indicator
+  useEffect(() => {
+    if (onMicStatusChange) onMicStatusChange(micAllowed)
+  }, [micAllowed, onMicStatusChange])
+
+  // Reset the "last detected" gate whenever the challenge note changes,
+  // so the child can play the same note in back-to-back challenges.
+  useEffect(() => {
+    lastDetectedRef.current = null
+  }, [challengeIndex])
+
   async function askForNote(note) {
-    setFrogLoading(true)
-    const res = await getFroggyResponse({ situation: 'hint', noteName: note })
     setFrogMessage(`Can you find the ${note}? Listen... 🎵`)
     setFrogEmotion('thinking')
-    setFrogLoading(false)
-    // Play the note after a short delay
-    setTimeout(() => playNote(note), 600)
+    setTimeout(() => playNoteAudio(note), 600)
   }
 
   const handleCorrectNote = useCallback(async () => {
     if (processingRef.current || completeRef.current) return
     processingRef.current = true
 
-    playCorrectSound()
-    setCorrectFlash(true)
-    setTimeout(() => setCorrectFlash(false), 600)
+    try {
+      playCorrectSound()
+      setCorrectFlash(true)
+      setTimeout(() => setCorrectFlash(false), 600)
 
-    const earned = wrongAttempts === 0 ? 3 : wrongAttempts <= 2 ? 2 : 1
-    setStarsEarned(prev => prev + earned)
+      const wrongNow = wrongAttempts
+      const earned = wrongNow === 0 ? 3 : wrongNow <= 2 ? 2 : 1
+      starsEarnedRef.current += earned
 
-    const nextIndex = challengeIndex + 1
+      const nextIndex = challengeIndex + 1
 
-    if (nextIndex >= CHALLENGE_SEQUENCE.length) {
-      completeRef.current = true
-      setFrogLoading(true)
-      const res = await getFroggyResponse({ situation: 'song_complete', songName: 'Find the Note' })
-      setFrogMessage(res.message)
-      setFrogEmotion(res.emotion)
-      setFrogLoading(false)
-      setTimeout(() => onChallengeComplete(starsEarned + earned), 2000)
-    } else {
-      setFrogLoading(true)
-      const res = await getFroggyResponse({ situation: 'correct_note', noteName: currentNote })
-      setFrogMessage(res.message)
-      setFrogEmotion(res.emotion)
-      setFrogLoading(false)
+      if (nextIndex >= CHALLENGE_SEQUENCE.length) {
+        completeRef.current = true
+        setFrogLoading(true)
+        const res = await getFroggyResponse({ situation: 'song_complete', songName: 'Find the Note' })
+        setFrogMessage(res.message)
+        setFrogEmotion(res.emotion)
+        setFrogLoading(false)
+        setTimeout(() => onChallengeComplete(starsEarnedRef.current), 2000)
+      } else {
+        setFrogLoading(true)
+        const res = await getFroggyResponse({ situation: 'correct_note', noteName: currentNote })
+        setFrogMessage(res.message)
+        setFrogEmotion(res.emotion)
+        setFrogLoading(false)
 
-      setTimeout(() => {
         setChallengeIndex(nextIndex)
         setWrongAttempts(0)
         setShowHint(false)
-        const nextNote = CHALLENGE_SEQUENCE[nextIndex]
-        setTimeout(() => askForNote(nextNote), 500)
-        processingRef.current = false
-      }, 1500)
-      return
+        setTimeout(() => askForNote(CHALLENGE_SEQUENCE[nextIndex]), 500)
+      }
+    } finally {
+      if (!completeRef.current) processingRef.current = false
     }
-
-    setTimeout(() => { processingRef.current = false }, 800)
-  }, [challengeIndex, wrongAttempts, currentNote, starsEarned, onChallengeComplete])
+  }, [challengeIndex, wrongAttempts, currentNote, onChallengeComplete])
 
   const handleWrongNote = useCallback(async () => {
     if (processingRef.current || completeRef.current) return
     processingRef.current = true
 
-    const newWrong = wrongAttempts + 1
-    setWrongAttempts(newWrong)
+    try {
+      const newWrong = wrongAttempts + 1
+      setWrongAttempts(newWrong)
 
-    if (newWrong >= 3) {
-      setShowHint(true)
+      if (newWrong >= 3) setShowHint(true)
+
+      if (newWrong % 2 === 0) {
+        setFrogMessage(`Ooh, not quite! Let me play it again... 🎵`)
+        setFrogEmotion('encouraging')
+        setTimeout(() => playNoteAudio(currentNote), 600)
+      }
+    } finally {
+      processingRef.current = false
     }
-
-    if (newWrong % 2 === 0) {
-      setFrogLoading(true)
-      const res = await getFroggyResponse({
-        situation: 'wrong_note',
-        noteName: currentNote,
-        wrongAttempts: newWrong,
-      })
-      setFrogMessage(`Ooh, not quite! Let me play it again... 🎵`)
-      setFrogEmotion('encouraging')
-      setFrogLoading(false)
-      setTimeout(() => playNote(currentNote), 600)
-    }
-
-    setTimeout(() => { processingRef.current = false }, 700)
   }, [wrongAttempts, currentNote])
 
   useEffect(() => {
@@ -158,7 +135,6 @@ export default function FindTheNote({ onChallengeComplete }) {
         isLoading={frogLoading}
       />
 
-      {/* Current challenge */}
       <motion.div
         className={styles.challengeCard}
         initial={{ scale: 0.8, opacity: 0 }}
@@ -168,22 +144,22 @@ export default function FindTheNote({ onChallengeComplete }) {
         <motion.div
           className={styles.noteCircle}
           style={{ background: COLOR_MAP[currentNote] }}
-          animate={correctFlash ? { scale: [1, 1.3, 1], transition: { duration: 0.4 } } : {}}
+          animate={correctFlash ? { scale: [1, 1.3, 1] } : {}}
+          transition={{ duration: 0.4 }}
         >
           <span className={styles.noteLetter}>?</span>
         </motion.div>
 
         <button
           className={styles.playAgainBtn}
-          onClick={() => { Tone.start(); playNote(currentNote) }}
+          onClick={() => playNoteAudio(currentNote)}
         >
           🔊 Play the note again
         </button>
       </motion.div>
 
-      {/* Progress */}
       <p className={styles.progressLabel}>
-        Challenge {challengeIndex + 1} of {totalChallenges} • ⭐ {starsEarned} stars
+        Challenge {challengeIndex + 1} of {CHALLENGE_SEQUENCE.length} • ⭐ {starsEarnedRef.current} stars
       </p>
 
       {/* Piano keyboard — show hint after 3 wrong */}
@@ -200,7 +176,7 @@ export default function FindTheNote({ onChallengeComplete }) {
         }}
       />
 
-      {!micAllowed && (
+      {micAllowed === false && (
         <p className={styles.micWarning}>
           🎤 Please allow microphone access so the app can hear you play!
         </p>

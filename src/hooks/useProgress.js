@@ -49,8 +49,12 @@ export function useProgress() {
     setProgress(prev => {
       const newTotal = prev.totalStars + count
       const today = new Date().toDateString()
+      const yesterday = new Date()
+      yesterday.setDate(yesterday.getDate() - 1)
       const wasToday = prev.lastPlayed === today
-      const newStreak = wasToday ? prev.streak : prev.streak + 1
+      const wasYesterday = prev.lastPlayed === yesterday.toDateString()
+      // Only extend streak for consecutive days; reset to 1 if a day was missed
+      const newStreak = wasToday ? prev.streak : wasYesterday ? prev.streak + 1 : 1
 
       // Check new sticker unlocks
       const newStickers = STICKER_UNLOCKS
